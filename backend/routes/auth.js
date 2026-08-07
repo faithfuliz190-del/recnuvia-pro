@@ -8,10 +8,11 @@ import {
   CURRENCIES,
 } from "../data/store.js";
 import { JWT_SECRET } from "../middleware/auth.js";
+import { asyncHandler } from "../middleware/asyncHandler.js";
 
 const router = Router();
 
-router.post("/register", (req, res) => {
+router.post("/register", asyncHandler(async (req, res) => {
   const { name, email, password, role, country, currency } = req.body;
 
   if (!name || !email || !password) {
@@ -23,11 +24,11 @@ router.post("/register", (req, res) => {
   if (currency && !CURRENCIES.includes(currency)) {
     return res.status(400).json({ error: `Currency must be one of ${CURRENCIES.join(", ")}` });
   }
-  if (findUserByEmail(email)) {
+  if (await findUserByEmail(email)) {
     return res.status(409).json({ error: "An account with that email already exists" });
   }
 
-  const user = createUser({
+  const user = await createUser({
     name,
     email,
     password,
@@ -38,11 +39,11 @@ router.post("/register", (req, res) => {
 
   const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: "12h" });
   res.status(201).json({ token, user: publicUser(user) });
-});
+}));
 
-router.post("/login", (req, res) => {
+router.post("/login", asyncHandler(async (req, res) => {
   const { email, password } = req.body;
-  const user = findUserByEmail(email || "");
+  const user = await findUserByEmail(email || "");
 
   if (!user || !verifyPassword(password || "", user.password)) {
     return res.status(401).json({ error: "Invalid email or password" });
@@ -50,6 +51,6 @@ router.post("/login", (req, res) => {
 
   const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: "12h" });
   res.json({ token, user: publicUser(user) });
-});
+}));
 
 export default router;

@@ -1,9 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Send, Plus, Minus, ArrowUpRight, ArrowDownLeft, ArrowLeftRight, ShieldCheck } from "lucide-react";
+import { Send, Plus, Minus, ArrowUpRight, ArrowDownLeft, ArrowLeftRight, ShieldCheck, Loader2 } from "lucide-react";
 import api from "../api.js";
 import { useAuth } from "../AuthContext.jsx";
 import { Sidebar, TopBar } from "../components/AppShell.jsx";
 import StatusPill from "../components/StatusPill.jsx";
+
+// Sending/depositing/withdrawing is intentionally turned off while this is
+// still being shown to prospective clients — flip to true when ready to go
+// live with real transfers.
+const TRANSFERS_ENABLED = false;
 
 const CURRENCIES = ["USD", "EUR", "GBP", "NGN", "KES", "INR", "JPY"];
 const RATES_TO_USD = { USD: 1, EUR: 1.08, GBP: 1.27, NGN: 0.000645, KES: 0.0077, INR: 0.012, JPY: 0.0067 };
@@ -117,8 +122,9 @@ export default function Dashboard() {
                 ].map((a) => (
                   <button
                     key={a.key}
-                    onClick={() => { setTab(a.key); formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }}
-                    className="flex-1 bg-white/10 hover:bg-white/20 transition-colors rounded-xl py-2.5 flex flex-col items-center gap-1 text-xs font-medium"
+                    disabled={!TRANSFERS_ENABLED}
+                    onClick={() => { if (!TRANSFERS_ENABLED) return; setTab(a.key); formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }}
+                    className="flex-1 bg-white/10 hover:bg-white/20 transition-colors rounded-xl py-2.5 flex flex-col items-center gap-1 text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white/10"
                   >
                     <a.icon size={16} />
                     {a.label}
@@ -142,6 +148,16 @@ export default function Dashboard() {
           </div>
 
           <div ref={formRef} className="bg-white rounded-2xl border border-slate-200 p-6 scroll-mt-6">
+            {!TRANSFERS_ENABLED ? (
+              <div className="py-10 flex flex-col items-center text-center gap-3">
+                <Loader2 size={22} className="text-indigo-400 animate-spin" />
+                <p className="text-sm font-medium text-slate-600">Transfers are launching soon</p>
+                <p className="text-xs text-slate-400 max-w-xs">
+                  Sending, deposits, and withdrawals aren't turned on yet — this space is reserved for that once we're ready to go live.
+                </p>
+              </div>
+            ) : (
+            <>
             <div className="flex gap-2 mb-5">
               {[
                 { key: "send", label: "Send", icon: Send },
@@ -226,6 +242,8 @@ export default function Dashboard() {
                 <ShieldCheck size={12} /> Transfers are encrypted and monitored for your protection.
               </p>
             </form>
+            </>
+            )}
           </div>
 
           <div ref={ledgerRef} className="scroll-mt-6">

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import {
-  users,
+  getAllUsers,
   publicUser,
   findUserById,
   createTransaction,
@@ -9,40 +9,41 @@ import {
 } from "../data/store.js";
 import { convert } from "../data/rates.js";
 import { requireAuth } from "../middleware/auth.js";
+import { asyncHandler } from "../middleware/asyncHandler.js";
 
 const router = Router();
 
 router.use(requireAuth);
 
 // Current user's profile + balance
-router.get("/me", (req, res) => {
-  const user = findUserById(req.user.id);
+router.get("/me", asyncHandler(async (req, res) => {
+  const user = await findUserById(req.user.id);
   if (!user) return res.status(404).json({ error: "User not found" });
   res.json(publicUser(user));
-});
+}));
 
 // Directory of other users/businesses to send money to
-router.get("/directory", (req, res) => {
-  const list = users
-    .filter((u) => u.id !== req.user.id && u.role !== "admin")
-    .map(publicUser);
+router.get("/directory", asyncHandler(async (req, res) => {
+  const all = await getAllUsers();
+  const list = all.filter((u) => u.id !== req.user.id && u.role !== "admin").map(publicUser);
   res.json(list);
-});
+}));
 
 // A user's own transaction history (sent, received, deposits, withdrawals)
-router.get("/", (req, res) => {
-  const list = getTransactionsForUser(req.user.id).map((t) => ({
+router.get("/", asyncHandler(async (req, res) => {
+  const history = await getTransactionsForUser(req.user.id);
+  const list = history.map((t) => ({
     ...t,
     direction:
       t.type !== "send" ? t.type : t.fromUserId === req.user.id ? "outgoing" : "incoming",
   }));
   res.json(list);
-});
+}));
 
 // Create a transaction: deposit, withdraw, or send (domestic or cross-border)
-router.post("/", (req, res) => {
+router.post("/", asyncHandler(async (req, res) => {
   const { type, amount, currency, toUserId, note } = req.body;
-  const user = findUserById(req.user.id);
+  const user = await findUserById(req.user.id);
 
   if (!["deposit", "withdraw", "send"].includes(type)) {
     return res.status(400).json({ error: "Type must be 'deposit', 'withdraw', or 'send'" });
@@ -57,7 +58,7 @@ router.post("/", (req, res) => {
   }
 
   if (type === "send") {
-    const recipient = findUserById(toUserId);
+    const recipient = await findUserById(toUserId);
     if (!recipient) {
       return res.status(400).json({ error: "Recipient not found" });
     }
@@ -67,7 +68,7 @@ router.post("/", (req, res) => {
     if (user.balance < amt) {
       return res.status(400).json({ error: "Insufficient balance" });
     }
-    const tx = createTransaction({
+    const tx = await createTransaction({
       type: "send",
       fromUserId: user.id,
       toUserId: recipient.id,
@@ -84,7 +85,7 @@ router.post("/", (req, res) => {
   if (type === "withdraw" && user.balance < amt) {
     return res.status(400).json({ error: "Insufficient balance" });
   }
-  const tx = createTransaction({
+  const tx = await createTransaction({
     type,
     fromUserId: type === "withdraw" ? user.id : null,
     toUserId: type === "deposit" ? user.id : null,
@@ -93,6 +94,6 @@ router.post("/", (req, res) => {
     note: note || "",
   });
   res.status(201).json(tx);
-});
+}));
 
 export default router;
