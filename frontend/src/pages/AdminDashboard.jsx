@@ -120,56 +120,6 @@ function CreateAccountForm({ onCreated }) {
   );
 }
 
-function EditableBalance({ user, onSaved }) {
-  const [editing, setEditing] = useState(false);
-  const [value, setValue] = useState(user.balance);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState("");
-
-  async function save() {
-    setError("");
-    setBusy(true);
-    try {
-      await api.post(`/admin/users/${user.id}/balance`, { balance: value });
-      setEditing(false);
-      onSaved();
-    } catch (err) {
-      setError(err.response?.data?.error || "Couldn't update balance.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  if (!editing) {
-    return (
-      <div className="flex items-center gap-3">
-        <p className="font-mono text-sm text-indigo-600">{money(user.balance, user.currency)}</p>
-        <button
-          onClick={() => { setValue(user.balance); setEditing(true); }}
-          className="text-xs text-slate-400 hover:text-indigo-600 underline underline-offset-2"
-        >
-          Edit
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex items-center gap-2">
-      <input
-        type="number" min="0" step="0.01" value={value}
-        onChange={(e) => setValue(e.target.value)}
-        className="w-28 rounded-lg border border-slate-200 px-2 py-1 text-sm font-mono"
-      />
-      {error && <p className="text-rose-700 text-xs">{error}</p>}
-      <button onClick={save} disabled={busy} className="text-xs bg-indigo-600 text-white rounded-full px-3 py-1 disabled:opacity-60">
-        {busy ? "…" : "Save"}
-      </button>
-      <button onClick={() => setEditing(false)} className="text-xs text-slate-400">Cancel</button>
-    </div>
-  );
-}
-
 function AccountRow({ u, onUpdated }) {
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState(u.balance);
@@ -226,6 +176,7 @@ function AccountRow({ u, onUpdated }) {
     </div>
   );
 }
+export default function AdminDashboard() {
   const [tab, setTab] = useState("pending");
   const [pending, setPending] = useState([]);
   const [all, setAll] = useState([]);
