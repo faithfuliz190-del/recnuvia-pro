@@ -122,9 +122,8 @@ export default function Dashboard() {
                 ].map((a) => (
                   <button
                     key={a.key}
-                    disabled={!TRANSFERS_ENABLED}
-                    onClick={() => { if (!TRANSFERS_ENABLED) return; setTab(a.key); formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }}
-                    className="flex-1 bg-white/10 hover:bg-white/20 transition-colors rounded-xl py-2.5 flex flex-col items-center gap-1 text-xs font-medium disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white/10"
+                    onClick={() => { setTab(a.key); formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); }}
+                    className="flex-1 bg-white/10 hover:bg-white/20 transition-colors rounded-xl py-2.5 flex flex-col items-center gap-1 text-xs font-medium"
                   >
                     <a.icon size={16} />
                     {a.label}
@@ -148,16 +147,6 @@ export default function Dashboard() {
           </div>
 
           <div ref={formRef} className="bg-white rounded-2xl border border-slate-200 p-6 scroll-mt-6">
-            {!TRANSFERS_ENABLED ? (
-              <div className="py-10 flex flex-col items-center text-center gap-3">
-                <Loader2 size={22} className="text-indigo-400 animate-spin" />
-                <p className="text-sm font-medium text-slate-600">Transfers are launching soon</p>
-                <p className="text-xs text-slate-400 max-w-xs">
-                  Sending, deposits, and withdrawals aren't turned on yet — this space is reserved for that once we're ready to go live.
-                </p>
-              </div>
-            ) : (
-            <>
             <div className="flex gap-2 mb-5">
               {[
                 { key: "send", label: "Send", icon: Send },
@@ -170,6 +159,13 @@ export default function Dashboard() {
                 </button>
               ))}
             </div>
+            {!TRANSFERS_ENABLED ? (
+              <div className="py-10 flex flex-col items-center text-center gap-3">
+                <Loader2 size={22} className="text-indigo-400 animate-spin" />
+                <p className="text-sm text-slate-400">Loading…</p>
+              </div>
+            ) : (
+            <>
 
             <form onSubmit={submit} className="space-y-4">
               {tab === "send" && (
