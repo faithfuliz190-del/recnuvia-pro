@@ -43,7 +43,7 @@ export function Sidebar({ active, onNavigate }) {
           </button>
         ))}
       </nav>
-      <div className="mt-auto px-3 py-2.5 text-xs text-slate-400 font-mono">Recnuvia Pro · Demo</div>
+      <div className="mt-auto px-3 py-2.5 text-xs text-slate-400 font-mono">Recnuvia Pro</div>
     </aside>
   );
 }

@@ -62,22 +62,6 @@ router.patch("/users/:id/balance", asyncHandler(async (req, res) => {
   res.json(publicUser(updated));
 }));
 
-// Admin directly sets a user's balance (e.g. correcting a demo, or funding
-// an account manually rather than through a deposit transaction).
-router.post("/users/:id/balance", asyncHandler(async (req, res) => {
-  const { balance } = req.body;
-  const amt = Number(balance);
-  if (Number.isNaN(amt) || amt < 0) {
-    return res.status(400).json({ error: "Balance must be a non-negative number" });
-  }
-  const user = await findUserById(req.params.id);
-  if (!user) return res.status(404).json({ error: "Account not found" });
-
-  await updateUserBalance(user.id, amt);
-  const updated = await findUserById(user.id);
-  res.json(publicUser(updated));
-}));
-
 router.get("/transactions", asyncHandler(async (req, res) => {
   res.json(await getAllTransactions());
 }));

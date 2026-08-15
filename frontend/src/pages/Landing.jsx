@@ -240,7 +240,6 @@ export default function Landing() {
       <footer className="border-t border-slate-100 py-8">
         <div className="max-w-6xl mx-auto px-6 flex items-center justify-between text-sm text-slate-400">
           <Logo />
-          <p>Prototype — no real funds move here.</p>
         </div>
       </footer>
     </div>

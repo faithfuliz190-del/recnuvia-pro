@@ -75,10 +75,6 @@ export default function Login() {
             </Link>
           </p>
         </form>
-
-        <div className="mt-6 text-slate-400 text-xs font-mono text-center leading-relaxed">
-          Demo accounts — admin@recnuviapro.demo / admin123 · sarah@recnuviapro.demo / password123
-        </div>
       </div>
     </div>
   );

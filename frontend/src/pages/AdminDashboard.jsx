@@ -29,7 +29,14 @@ function CreateAccountForm({ onCreated }) {
       setForm({ name: "", email: "", password: "", role: "individual", country: "", currency: "USD" });
       onCreated();
     } catch (err) {
-      setStatus({ ok: false, msg: err.response?.data?.error || "Couldn't create that account." });
+      const detail = err.response
+        ? `(HTTP ${err.response.status}) ${
+            typeof err.response.data === "string"
+              ? err.response.data.slice(0, 150)
+              : err.response.data?.error || "no details returned"
+          }`
+        : err.message || "network error — no response from server";
+      setStatus({ ok: false, msg: `Couldn't create that account — ${detail}` });
     } finally {
       setBusy(false);
     }
@@ -134,7 +141,14 @@ function AccountRow({ u, onUpdated }) {
       setEditing(false);
       onUpdated();
     } catch (err) {
-      setError(err.response?.data?.error || "Couldn't update balance.");
+      const detail = err.response
+        ? `(HTTP ${err.response.status}) ${
+            typeof err.response.data === "string"
+              ? err.response.data.slice(0, 150)
+              : err.response.data?.error || "no details returned"
+          }`
+        : err.message || "network error — no response from server";
+      setError(`Couldn't update balance — ${detail}`);
     } finally {
       setBusy(false);
     }
